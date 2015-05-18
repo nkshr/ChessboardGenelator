@@ -4,7 +4,7 @@
 
 using namespace std;
 
-Camera cam(0 , 0, 500);
+Camera cam(0 , 0, 0);
 MatCom server("server");
 
 void setGluLookAt(GLfloat *eye, GLfloat *center, GLfloat *up)
@@ -71,6 +71,9 @@ Camera::Camera(double x, double y, double z)
 	eye = (Mat_<double>(3, 1) << 0, 0, 0);
 	up = (Mat_<double>(3, 1) << 0, 1, 0);
 	center = (Mat_<double>(3, 1) << 0, 0, -1);
+	initial_eye = eye.clone();
+	initial_up = up.clone();
+	initial_center = center.clone();
 	translate(x, y, z);
 }
 
@@ -126,8 +129,8 @@ void Camera::translate(double x, double y, double z)
 
 void Camera::update()
 {
-	center = rmat * (center - eye) + eye;
-	up = rmat * up;
+	center = rmat * initial_center + eye;
+	up = rmat * initial_up;
 	//cam.resetRmat();
 }
 
@@ -167,6 +170,7 @@ int len;
 int sock0;
 char buf[64];
 Mat rvec;
+Mat temp2 = Mat::eye(3, 3, CV_64F);
 
 void display(void)
 {
@@ -197,15 +201,15 @@ void display(void)
 		cam.eye.at<double>(0, 0), cam.eye.at<double>(1, 0), cam.eye.at<double>(2, 0));
 	putText(textImg, str, cv::Point(5, 15), 
 		FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0, 0, 200), 1, CV_AA);
-	sprintf(str, "rmmat %4.1f, %4.1f, %4.1f",
+	sprintf(str, "rmmat %1.4f, %1.4f, %1.4f",
 		cam.rmat.at<double>(0, 0), cam.rmat.at<double>(0, 1), cam.rmat.at<double>(0, 2));
 	putText(textImg, str, cv::Point(5, 25),
 		FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0, 0, 200), 1, CV_AA);
-	sprintf(str, "      %4.1f, %4.1f, %4.1f",
+	sprintf(str, "      %1.4f, %1.4f, %1.4f",
 		cam.rmat.at<double>(1, 0), cam.rmat.at<double>(1, 1), cam.rmat.at<double>(1, 2));
 	putText(textImg, str, cv::Point(5, 35),
 		FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0, 0, 200), 1, CV_AA);
-	sprintf(str, "      %4.1f, %4.1f, %4.1f",
+	sprintf(str, "      %1.4f, %1.4f, %1.4f",
 		cam.rmat.at<double>(2, 0), cam.rmat.at<double>(2, 1), cam.rmat.at<double>(2, 2));
 	putText(textImg, str, cv::Point(5, 45),
 		FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0, 0, 200), 1, CV_AA);
@@ -218,13 +222,13 @@ void display(void)
 	sprintf(buf, "%f %f %f %f %f %f",
 		cam.eye.at<double>(0, 0), cam.eye.at<double>(1, 0), cam.eye.at<double>(2, 0),
 		rvec.at<double>(0, 0), rvec.at<double>(1, 0), rvec.at<double>(2, 0));
+	cout << cam.rmat << endl;
 	send(sock, buf, sizeof(buf), 0);
-	cam.resetRmat();
 }
 
 void init()
 {
-	server.init(12345, "172.18.1.5");
+	server.init(12345, "192.168.100.100");
 	//glCapture.setWriteFile("output.avi");
 	glClearColor(0.3, 0.3, 0.3, 0);
 	glEnable(GL_DEPTH_TEST);
@@ -253,7 +257,7 @@ void timer(int value)
 
 void specialKeyboard(int key, int x, int y)
 {
-	cam.resetRmat();
+	//cam.resetRmat();
 	//cout << cam.rmat << endl;
 	switch (key)
 	{
@@ -283,6 +287,7 @@ void specialKeyboard(int key, int x, int y)
 		break;
 	}
 	cam.update();
+	//display();
 }
 
 void keyboard(unsigned char key, int x, int y)

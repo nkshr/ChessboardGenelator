@@ -12,7 +12,7 @@ class Camera
 {
 public:
 	Mat rmat, tmat;
-	Mat eye, up, center;
+	Mat eye, up, center, initial_eye, initial_up, initial_center;
 	Camera(double x, double y, double z);
 	void roll(double angle);
 	void pitch(double angle);
