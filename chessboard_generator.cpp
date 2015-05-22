@@ -22,7 +22,7 @@ void setGluLookAt(GLfloat *eye, GLfloat *center, GLfloat *up)
 
 void draw(void)
 {
-	const float side = 30;
+	const float side = 50;
 	//glEnable(GL_CULL_FACE);
 	/*glBegin(GL_QUADS);
 	glColor4f(0, 0, 0, 0);
@@ -171,7 +171,10 @@ int sock0;
 char buf[64];
 Mat rvec;
 Mat temp2 = Mat::eye(3, 3, CV_64F);
-
+GLfloat cam_mat[16] = { 100, 0, 0, 0,
+			0, 100, 0, 0,
+			-WIDTH / 2, -HEIGHT / 2, 1 + 1000, -1,
+			0, 0, 1000, 0};
 void display(void)
 {
 	textImg = Mat::zeros(300, 300, CV_64FC3);
@@ -179,8 +182,9 @@ void display(void)
 	glViewport(0, 0, WIDTH, HEIGHT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(30, (double)WIDTH / (double)HEIGHT, 0.5, 1000);
-
+	//gluPerspective(45, (double)WIDTH / (double)HEIGHT, 0.5, 1000);
+	glOrtho(0, WIDTH, 0, HEIGHT, 1, 1000);
+	glMultMatrixf(cam_mat);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	setGluLookAt(eye, center, up);
@@ -228,7 +232,7 @@ void display(void)
 
 void init()
 {
-	server.init(12345, "192.168.100.100");
+	server.init(12345, "192.168.0.3");
 	//glCapture.setWriteFile("output.avi");
 	glClearColor(0.3, 0.3, 0.3, 0);
 	glEnable(GL_DEPTH_TEST);
