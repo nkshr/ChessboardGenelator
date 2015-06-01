@@ -1,7 +1,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-#include "chessboard_genelator.h"
+#include "chessboard_generator.h"
 
 using namespace std;
 

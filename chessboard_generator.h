@@ -17,7 +17,7 @@ public:
 	void roll(double angle);
 	void pitch(double angle);
 	void yaw(double angle);
-	void translate(double x, double y, double z);
+	void transfer(double x, double y, double z);
 	void update();
 	void resetRmat();
 };

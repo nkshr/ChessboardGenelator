@@ -1,4 +1,4 @@
-#include "chessboard_genelator.h"
+#include "chessboard_generator.h"
 #include "GLCapture.hpp"
 #include <MatCom.hpp>
 
@@ -74,7 +74,7 @@ Camera::Camera(double x, double y, double z)
 	initial_eye = eye.clone();
 	initial_up = up.clone();
 	initial_center = center.clone();
-	translate(x, y, z);
+	transfer(x, y, z);
 }
 
 void Camera::roll(double angle)
@@ -117,7 +117,7 @@ void Camera::resetRmat()
 {
 	rmat = Mat::eye(3, 3, CV_64F);
 }
-void Camera::translate(double x, double y, double z)
+void Camera::transfer(double x, double y, double z)
 {
 	eye.at<double>(0, 0) += x;
 	eye.at<double>(1, 0) += y;
@@ -175,6 +175,11 @@ GLfloat cam_mat[16] = { 100, 0, 0, 0,
 			0, 100, 0, 0,
 			-WIDTH / 2, -HEIGHT / 2, 1 + 1000, -1,
 			0, 0, 1000, 0};
+
+GLfloat proj_mat[16] = { 100.0f / 320.f, 0, 0, 0,
+0, 100.f / 240.f, 0, 0,
+0, 0, -(1000.0 + 1.0) / (1000.0f - 1.0f), -1.0f,
+0, 0, -2 * 1000.0f / (1000.0f - 1.0f), 0 };
 void display(void)
 {
 	textImg = Mat::zeros(300, 300, CV_64FC3);
@@ -183,8 +188,9 @@ void display(void)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	//gluPerspective(45, (double)WIDTH / (double)HEIGHT, 0.5, 1000);
-	glOrtho(0, WIDTH, 0, HEIGHT, 1, 1000);
-	glMultMatrixf(cam_mat);
+	//glMultMatrixf(cam_mat);
+	//glOrtho(0, WIDTH, 0, HEIGHT, 1, 1000);
+	glMultMatrixf(proj_mat);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	setGluLookAt(eye, center, up);
@@ -232,7 +238,7 @@ void display(void)
 
 void init()
 {
-	server.init(12345, "192.168.0.3");
+	server.init(12345, "192.168.0.4");
 	//glCapture.setWriteFile("output.avi");
 	glClearColor(0.3, 0.3, 0.3, 0);
 	glEnable(GL_DEPTH_TEST);
@@ -303,28 +309,28 @@ void keyboard(unsigned char key, int x, int y)
 	switch (key)
 	{
 	case '[':
-		cam.translate(speed * temp[0], speed * temp[1],speed * temp[2]);
+		cam.transfer(speed * temp[0], speed * temp[1],speed * temp[2]);
 		break;
 	case ']':
-		cam.translate(- speed * temp[0], - speed * temp[1], - speed * temp[2]);
+		cam.transfer(- speed * temp[0], - speed * temp[1], - speed * temp[2]);
 		break;
 	case 'w':
-		cam.translate(speed * cam.up.at<double>(0, 0),
+		cam.transfer(speed * cam.up.at<double>(0, 0),
 			speed * cam.up.at<double>(1, 0),
 			speed * cam.up.at<double>(2, 0));
 		break;
 	case 's':
-		cam.translate(- speed * cam.up.at<double>(0, 0),
+		cam.transfer(- speed * cam.up.at<double>(0, 0),
 			- speed * cam.up.at<double>(1, 0),
 			- speed * cam.up.at<double>(2, 0));
 		break;
 	case 'd':
-		cam.translate(speed * (temp[1] * cam.up.at<double>(2, 0) - temp[2] * cam.up.at<double>(1, 0)),
+		cam.transfer(speed * (temp[1] * cam.up.at<double>(2, 0) - temp[2] * cam.up.at<double>(1, 0)),
 			speed * (temp[2] * cam.up.at<double>(0, 0) - temp[0] * cam.up.at<double>(2, 0)),
 			speed * (temp[0] * cam.up.at<double>(1, 0) - temp[1] * cam.up.at<double>(0, 0)));
 		break;
 	case 'a':
-		cam.translate(speed * (- temp[1] * cam.up.at<double>(2, 0) + temp[2] * cam.up.at<double>(1, 0)),
+		cam.transfer(speed * (- temp[1] * cam.up.at<double>(2, 0) + temp[2] * cam.up.at<double>(1, 0)),
 			speed * (- temp[2] * cam.up.at<double>(0, 0) + temp[0] * cam.up.at<double>(2, 0)),
 			speed * (- temp[0] * cam.up.at<double>(1, 0) + temp[1] * cam.up.at<double>(0, 0)));
 		break;
